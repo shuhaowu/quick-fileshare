@@ -1,0 +1,4 @@
+#!/bin/bash
+
+mkdir -p files
+FLASK_APP=quick_fileshare/__init__.py FLASK_DEBUG=1 QFS_READONLY=0 QFS_ALLOW_DELETE=1 QFS_BASEPATH=files flask run

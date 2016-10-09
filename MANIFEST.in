@@ -1,0 +1,2 @@
+recursive-include quick_fileshare/templates *
+recursive-include quick_fileshare/static *

@@ -1,0 +1,66 @@
+<!doctype html>
+<html class="no-js" lang="en" dir="ltr">
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="x-ua-compatible" content="ie=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ current_path }} - Quick Fileshare</title>
+    <base href="/">
+    <link rel="stylesheet" href="static/css/foundation.min.css">
+    <link rel="stylesheet" href="static/css/app.css">
+  </head>
+  <body>
+    <div class="container">
+      <div class="row">
+        <div class="large-12 columns">
+          {% if not readonly %}
+          <div class="callout">
+            <form method="POST" enctype="multipart/form-data">
+              <input type="file" name="file" style="width:inherit;">
+              <input type="submit" value="Upload" class="small button float-right">
+            </form>
+          </div>
+          {% endif %}
+          <p class="text-center"><strong>Directory listing for <code>{{ current_path }}</code></strong></p>
+          <table>
+            <thead>
+              <tr>
+                <th>Name</th>
+                <th>Size (bytes)</th>
+                {% if not readonly and allow_delete %}
+                <th>Delete</th>
+                {% endif %}
+              </tr>
+            </thead>
+            <tbody>
+              {% if parent_path %}
+              <tr>
+                <td><a href="files{{ parent_path|urlencode }}">../</a></td>
+                <td></td>
+                <td></td>
+              </tr>
+              {% endif %}
+              {% for item in listing %}
+              <tr>
+                <td><a href="files{{ current_path|urlencode }}{{ item['name']|urlencode }}">{{ item["name"] }}{% if item["type"] == "dir" %}/{% endif %}</a> </td>
+                <td>{{ item["size"] or "--" }}</td>
+                {% if not readonly and allow_delete %}
+                <td>
+                  {% if item['type'] == "file" %}
+                  <a href="delete{{ current_path|urlencode }}{{ item['name']|urlencode }}" class="delete" onclick="return confirm('Are you sure you want to delete?');">Delete</a>
+                  {% else %}
+                  --
+                  {% endif %}
+                </td>
+                {% endif %}
+              </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <footer>Powered by <a href="https://github.com/shuhaowu/quick-fileshare">Quick Fileshare</a></footer>
+  </body>
+</html>

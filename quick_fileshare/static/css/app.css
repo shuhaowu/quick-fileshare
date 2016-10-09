@@ -1,0 +1,25 @@
+footer {
+  color: #CCC;
+  font-size: 0.8em;
+  text-align: center;
+}
+
+ul.menu > li > a.active {
+  font-weight: bold;
+}
+
+.container {
+  margin-top: 1em;
+}
+
+body {
+  font-family: monospace;
+}
+
+a.delete {
+  color: red;
+}
+
+a.delete:hover {
+  color: #FF3442;
+}

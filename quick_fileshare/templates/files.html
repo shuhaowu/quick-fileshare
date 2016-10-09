@@ -11,12 +11,26 @@
   </head>
   <body>
     <div class="container">
+      {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+        {% for category, message in messages %}
+        <div class="row">
+          <div class="large-12 columns">
+            <div class="{{ category }} callout">
+              <p>{{ message }}</p>
+            </div>
+          </div>
+        </div>
+        {% endfor %}
+        {% endif %}
+      {% endwith %}
       <div class="row">
         <div class="large-12 columns">
           {% if not readonly %}
           <div class="callout">
             <form method="POST" enctype="multipart/form-data">
               <input type="file" name="file" style="width:inherit;">
+              <input type="hidden" name="_csrf_token" value="{{ csrf_token() }}">
               <input type="submit" value="Upload" class="small button float-right">
             </form>
           </div>
@@ -47,7 +61,10 @@
                 {% if not readonly and allow_delete %}
                 <td>
                   {% if item['type'] == "file" %}
-                  <a href="delete{{ current_path|urlencode }}{{ item['name']|urlencode }}" class="delete" onclick="return confirm('Are you sure you want to delete?');">Delete</a>
+                  <form method="POST" enctype="multipart/form-data" action="delete{{ current_path|urlencode }}{{ item['name']|urlencode }}">
+                    <input type="hidden" name="_csrf_token" value="{{ csrf_token() }}">
+                    <input type="submit" value="Delete" onclick="return confirm('Are you sure you want to delete?');">
+                  </form>
                   {% else %}
                   --
                   {% endif %}

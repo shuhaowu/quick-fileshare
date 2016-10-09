@@ -5,7 +5,7 @@ setup(
   version="0.1",
   include_package_data=True,
   zip_safe=False,
-  install_requires=["Flask"],
+  install_requires=["Flask", "future"],
   url="https://github.com/shuhaowu/flask-fileshare",
   author="Shuhao Wu",
   packages=["quick_fileshare"],

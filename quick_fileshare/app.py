@@ -2,13 +2,16 @@ from __future__ import absolute_import
 
 import os
 import os.path
+import string
+import random
 
 try:
   from urllib import quote
 except ImportError:
   from urllib.parse import quote
 
-from flask import Flask, render_template, abort, send_file, redirect, url_for, request, safe_join
+from builtins import range
+from flask import Flask, render_template, abort, send_file, redirect, url_for, request, safe_join, session, flash
 from werkzeug.utils import secure_filename
 
 
@@ -22,14 +25,35 @@ def get_envbool(name, default):
   else:
     return True
 
+TOKEN_CHARACTERS = string.ascii_letters + string.digits
+
+
+def generate_csrf_token():
+  if "_csrf_token" not in session:
+    rng = random.SystemRandom()
+    session["_csrf_token"] = "".join([rng.choice(TOKEN_CHARACTERS) for i in range(32)])
+
+  return session["_csrf_token"]
+
 
 app = Flask(__name__)
 app.config.update(
+  ALLOW_DELETE=get_envbool("QFS_ALLOW_DELETE", False),
   BASEPATH=os.environ.get("QFS_BASEPATH", os.getcwd()),
   READONLY=get_envbool("QFS_READONLY", True),
-  ALLOW_DELETE=get_envbool("QFS_ALLOW_DELETE", False),
+  SECRET_KEY=os.urandom(24),
 )
+
 app.jinja_env.filters["urlencode"] = lambda u: quote(u)
+app.jinja_env.globals["csrf_token"] = generate_csrf_token
+
+
+@app.before_request
+def csrf_protect():
+  if request.method == "POST":
+    token = session.pop("_csrf_token", None)
+    if not token or token != request.form.get("_csrf_token"):
+      abort(400)
 
 
 @app.route("/")
@@ -88,8 +112,8 @@ def files(filepath):
   return render_template("files.html", **variables)
 
 
-@app.route("/delete/", defaults={"filepath": ""})
-@app.route("/delete/<path:filepath>")
+@app.route("/delete/", defaults={"filepath": ""}, methods=["POST"])
+@app.route("/delete/<path:filepath>", methods=["POST"])
 def delete_file(filepath):
   if app.config["READONLY"] or not app.config["ALLOW_DELETE"]:
     return abort(403)
@@ -108,6 +132,7 @@ def delete_file(filepath):
 def upload_file(local_directory_path, filepath):
   file = request.files.get("file")
   if not file or file.filename == "":
+    flash("No file selected.", "alert")
     return redirect(url_for("files", filepath=filepath))
 
   filename = secure_filename(file.filename)

@@ -70,7 +70,7 @@ def files(filepath):
 
   if request.method == "POST":
     if app.config["READONLY"]:
-      return abort(403)
+      return abort(405)
 
     return upload_file(local_path, filepath)
   elif os.path.isfile(local_path):
@@ -116,7 +116,7 @@ def files(filepath):
 @app.route("/delete/<path:filepath>", methods=["POST"])
 def delete_file(filepath):
   if app.config["READONLY"] or not app.config["ALLOW_DELETE"]:
-    return abort(403)
+    return abort(405)
 
   local_path = safe_join(app.config["BASEPATH"], filepath)
   if not os.path.exists(local_path):
@@ -136,7 +136,11 @@ def upload_file(local_directory_path, filepath):
     return redirect(url_for("files", filepath=filepath))
 
   filename = secure_filename(file.filename)
-  file.save(os.path.join(local_directory_path, filename))
+  file_local_path = os.path.join(local_directory_path, filename)
+  if os.path.exists(file_local_path) and not os.path.isfile(file_local_path):
+    return abort(400)
+
+  file.save(file_local_path)
   return redirect(url_for("files", filepath=filepath))
 
 

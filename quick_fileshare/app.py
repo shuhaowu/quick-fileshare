@@ -145,4 +145,4 @@ def upload_file(local_directory_path, filepath):
 
 
 def main():
-  app.run(host=os.environ.get("HOST"), port=os.environ.get("PORT", 8000), debug=False)
+  app.run(host=os.environ.get("HOST", "0.0.0.0"), port=os.environ.get("PORT", 8000), debug=False)

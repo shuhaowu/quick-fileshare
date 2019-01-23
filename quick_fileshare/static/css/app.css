@@ -16,6 +16,15 @@ body {
   font-family: monospace;
 }
 
+a {
+  text-decoration: underline !important;
+  color: blue;
+}
+
+a:hover {
+  color: #000077;
+}
+
 a.delete {
   color: red;
 }

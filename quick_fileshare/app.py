@@ -15,6 +15,9 @@ from flask import Flask, render_template, abort, send_file, redirect, url_for, r
 from werkzeug.utils import secure_filename
 
 
+TOKEN_CHARACTERS = string.ascii_letters + string.digits
+
+
 def get_envbool(name, default):
   value = os.environ.get(name, default)
   if isinstance(value, str):
@@ -24,8 +27,6 @@ def get_envbool(name, default):
     return False
   else:
     return True
-
-TOKEN_CHARACTERS = string.ascii_letters + string.digits
 
 
 def generate_csrf_token():
@@ -123,10 +124,33 @@ def delete_file(filepath):
     return abort(404)
 
   if not os.path.isfile(local_path):
-    return abort(501)
+    return abort(400)
 
   os.remove(local_path)
   return redirect(url_for("files", filepath=os.path.dirname(filepath)))
+
+
+@app.route("/delete-all/", defaults={"filepath": ""}, methods=["POST"])
+@app.route("/delete-all/<path:filepath>", methods=["POST"])
+def delete_all_files(filepath):
+  if app.config["READONLY"] or not app.config["ALLOW_DELETE"]:
+    return abort(405)
+
+  local_path = safe_join(app.config["BASEPATH"], filepath)
+  if not os.path.exists(local_path):
+    return abort(404)
+
+  if not os.path.isdir(local_path):
+    return abort(400)
+
+  for fn in os.listdir(local_path):
+    fn = os.path.join(local_path, fn)
+    if not os.path.isfile(fn):
+      continue
+
+    os.remove(fn)
+
+  return redirect(url_for("files", filepath=filepath))
 
 
 def upload_file(local_directory_path, filepath):

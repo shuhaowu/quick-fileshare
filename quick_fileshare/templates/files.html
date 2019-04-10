@@ -35,7 +35,18 @@
             </form>
           </div>
           {% endif %}
-          <p class="text-center"><strong>Directory listing for <code>{{ current_path }}</code></strong></p>
+
+          <div class="large-12 column">
+            <strong>Directory listing for <code>{{ current_path }}</code></strong>
+            {% if not readonly and allow_delete %}
+            <form method="POST" enctype="multipart/form-data" action="delete-all{{ current_path|urlencode }}" style="display: inline;">
+              <input type="hidden" name="_csrf_token" value="{{ csrf_token() }}">
+              <input type="submit" value="Delete all files" onclick="return prompt('This will delete ALL FILES in this directory. Type YES in the box below to proceed:').toUpperCase() == 'YES';" class="small alert button" style="margin: 0;">
+            </form>
+            {% endif %}
+            <p/>
+          </div>
+
           <table>
             <thead>
               <tr>
